@@ -1,0 +1,78 @@
+cff-version: 1.2.0
+message: "If you use DEGASv3, please cite the software and the DEGAS publications below."
+title: "DEGASv3"
+type: software
+license: MIT
+version: 0.1.0
+date-released: "2026-11-09"
+authors:
+  - given-names: "Justin"
+    family-names: "Couetil"
+  - name: "the DEGAS team"
+abstract: >-
+  DEGASv3 transfers patient-level outcomes from bulk RNA-seq onto single-cell
+  or spatial transcriptomic data with the DEGAS deep transfer-learning model,
+  then compares high-score and low-score cells within each cluster.
+keywords:
+  - transfer learning
+  - single-cell
+  - spatial transcriptomics
+  - DEGAS
+references:
+  - type: article
+    title: "Diagnostic Evidence GAuge of Single cells (DEGAS): a flexible deep transfer learning framework for prioritizing cells in relation to disease"
+    authors:
+      - {given-names: "Travis S.", family-names: "Johnson"}
+      - {given-names: "Christina Y.", family-names: "Yu"}
+      - {given-names: "Zhi", family-names: "Huang"}
+      - {given-names: "Siwen", family-names: "Xu"}
+      - {given-names: "Tongxin", family-names: "Wang"}
+      - {given-names: "Chuanpeng", family-names: "Dong"}
+      - {given-names: "Wei", family-names: "Shao"}
+      - {given-names: "Mohammad", family-names: "Abu Zaid"}
+      - {given-names: "Xiaoqing", family-names: "Huang"}
+      - {given-names: "Yijie", family-names: "Wang"}
+      - {given-names: "Christopher", family-names: "Bartlett"}
+      - {given-names: "Yan", family-names: "Zhang"}
+      - {given-names: "Brian A.", family-names: "Walker"}
+      - {given-names: "Yunlong", family-names: "Liu"}
+      - {given-names: "Kun", family-names: "Huang"}
+      - {given-names: "Jie", family-names: "Zhang"}
+    journal: "Genome Medicine"
+    year: 2022
+    volume: 14
+    issue: 1
+    pages: 11
+    doi: "10.1186/s13073-022-01012-2"
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC8808996"
+  - type: article
+    title: "Diagnostic Evidence GAuge of Single cells (DEGAS): A flexible deep-transfer learning framework for prioritizing cells in relation to disease"
+    authors:
+      - {given-names: "Travis S.", family-names: "Johnson"}
+    journal: "bioRxiv"
+    year: 2020
+    doi: "10.1101/2020.06.16.142984"
+    url: "https://www.biorxiv.org/content/10.1101/2020.06.16.142984"
+    notes: "Preprint of the Genome Medicine article. Only the first author is listed; see the DOI for the full author list."
+  - type: article
+    title: "A novel deep optimal transport framework reveals prostate cancer risk heterogeneity, Alzheimer's disease risk heterogeneity, and myeloma cells associated with a short-term sham bortezomib response and progressive disease"
+    authors:
+      - {given-names: "Ziyu", family-names: "Liu"}
+      - {given-names: "Sihong", family-names: "Li"}
+      - {given-names: "Justin", family-names: "Couetil"}
+      - {given-names: "Jie", family-names: "Zhang"}
+      - {given-names: "Kun", family-names: "Huang"}
+      - {given-names: "Travis S.", family-names: "Johnson"}
+    journal: "bioRxiv"
+    year: 2025
+    doi: "10.1101/2025.02.03.636036"
+    url: "https://www.biorxiv.org/content/10.1101/2025.02.03.636036"
+    notes: "DEGASv2 preprint (Wasserstein alignment)."
+  - type: software
+    title: "DEGAS (original R/TensorFlow implementation)"
+    authors:
+      - {given-names: "Travis S.", family-names: "Johnson"}
+    repository-code: "https://github.com/tsteelejohnson91/DEGAS"
+  - type: software
+    title: "DEGASv2"
+    repository-code: "https://github.com/ElliotLiu1997/DEGASv2"

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "degas3"
+version = "0.1.0"
+description = "Disease-agnostic DEGAS workflow: transfer bulk patient outcomes to single-cell and spatial data."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "torch>=2.0",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "scipy>=1.10",
+    "scikit-learn>=1.2",
+    "anndata>=0.10",
+    "scanpy>=1.10",
+    "igraph>=0.10",
+    "leidenalg>=0.10",
+    "matplotlib>=3.7",
+    "h5py>=3.8",
+    "pydeseq2>=0.4.10",
+    "gseapy>=1.0",
+    "umap-learn>=0.5",
+]
+
+[project.optional-dependencies]
+explain = ["shap>=0.43"]
+dev = ["pytest>=7"]
+
+[project.scripts]
+degas3 = "degas3.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["degas3*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::FutureWarning", "ignore::DeprecationWarning"]

@@ -1,0 +1,24 @@
+# environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+build/
+dist/
+
+# data and model artifacts
+*.h5ad
+*.npz
+*.pt
+runs/
+Rplots.pdf
+
+# _reference/ is intentionally NOT ignored yet; it is removed before release.
+
+# reference material is read locally by agents and removed before release
+_reference/
