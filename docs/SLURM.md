@@ -38,14 +38,20 @@ the generated script, not in package code. Submit only with the user's consent.
 | prepare | none |
 | train (array over tasks) | prepare |
 | select | all train tasks |
-| fit (array over sizes) | select |
+| fit (array over size x seed) | select |
 | score | all fit tasks |
-| stratify, de, pathways | score |
-| explain (optional, GPU) | score and stratify |
-| report | all requested stages |
+| stratify | score |
+| de | stratify |
+| pathways | de |
+| explain (optional `--explain`, GPU) | pathways |
+| report | pathways (and explain) |
 
-Each job uses `afterok` on its predecessors. Array tasks call
-`degas3 train RUN --task N` so a failed task can be rerun alone.
+Each job uses `afterok` on its predecessor. Array tasks call
+`degas3 train RUN --task N` and `degas3 fit RUN --task N` (0-based) so a failed task
+can be rerun alone. The fit array needs `cv/selection.json`; if you generate the script
+before `select` has run, fit is a single `fit --all` job, so regenerate the script after
+`select` to get the array. Other options: `--cpu-partition`, `--time stage=HH:MM:SS`
+(repeatable), `--venv`, `--modules`, `--explain`.
 
 ## Resume after failure
 

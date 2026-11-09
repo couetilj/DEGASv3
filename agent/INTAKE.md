@@ -48,9 +48,9 @@ Check after B: donor count; cells per donor; cells per cluster; gene id format
 
 | # | Question | Maps to |
 |---|---|---|
-| D1 | "Patient k-fold validation (default), or leave-one-dataset-out? (Only if at least 2 datasets.)" | config `cv` |
-| D2 | "Model class: automatic (uses clusters if present), blank, or class?" | `--model auto|blank|class` |
-| D3 | "Split each cluster at the median, or at quartiles 0.25 and 0.75?" | `degas3 stratify --split` |
+| D1 | "Patient k-fold validation (default), or leave-one-dataset-out? (Only if at least 2 datasets.)" | `degas3 init --cv patient_kfold|leave_one_dataset_out` |
+| D2 | "Model class: automatic (uses clusters if present), blank, or class?" | `degas3 init --model auto|blank|class` |
+| D3 | "Split each cluster at the median, or at quartiles 0.25 and 0.75?" | `degas3 stratify --split median|quantiles` |
 | D4 | "DE method: automatic rule, or force a method?" | `degas3 de --method` |
 | D5 | "Run SHAP explanations? Spatial neighborhoods? C-SIDE?" | optional stages |
 | D6 | "Gene ids: do you have a mapping file?" | optional mapping CSV in config |

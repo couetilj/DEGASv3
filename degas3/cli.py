@@ -36,6 +36,8 @@ STAGE_MODULES: dict[str, list[str]] = {
     "report": ["degas3.report"],
     "slurm": ["degas3.slurm"],
 }
+#: Stages whose completion marker ``--force`` deletes here (spatial modules honor ``args.force`` themselves).
+FORCE_MARKER_STAGES = {"stratify", "de", "pathways", "explain"}
 _ENTRY_PREFIXES = ("cli_", "run_", "main_")
 
 #: Order used by ``run-all`` (the minimal scenario).
@@ -53,6 +55,10 @@ def _not_implemented(name: str) -> int:
 
 def _lazy_stage(name: str) -> Callable[[argparse.Namespace], int]:
     def handler(args: argparse.Namespace) -> int:
+        if getattr(args, "force", False) and name in FORCE_MARKER_STAGES:
+            from degas3.runs import RunDir
+
+            RunDir(args.run).complete_path(name).unlink(missing_ok=True)
         for modname in STAGE_MODULES[name]:
             try:
                 mod = importlib.import_module(modname)
@@ -96,6 +102,8 @@ def _cmd_init(args: argparse.Namespace) -> int:
         label_col=args.label_col, sample_col=args.sample_col, dataset_col=args.dataset_col,
         patient_col=args.patient_col, pheno_id_col=args.pheno_id_col, spatial_key=args.spatial_key,
         already_log=args.already_log, force=args.force,
+        **{k: v for k, v in (("model", args.model), ("cv", args.cv), ("feature_selection", args.feature_selection),
+                             ("rank_scope", args.rank_scope)) if v is not None},
     )
     _out(format_summary(m))
     return 0
@@ -124,6 +132,8 @@ def _cmd_run_all(args: argparse.Namespace) -> int:
     chain = list(RUN_ALL_CHAIN)
     if not cfg.cluster_col:
         chain.insert(0, "cluster")
+    if args.skip_pathways:
+        chain.remove("pathways")
     for stage in chain:
         argv = [stage, args.run]
         if stage == "train":
@@ -132,6 +142,10 @@ def _cmd_run_all(args: argparse.Namespace) -> int:
                 argv.append("--allow-cpu")
         elif stage == "fit":
             argv.append("--all")
+            if args.allow_cpu:
+                argv.append("--allow-cpu")
+        elif stage == "pathways" and args.gmt:
+            argv += ["--gmt", args.gmt]
         log.info("run-all: %s", " ".join(argv))
         code = main(argv)
         if code != 0:
@@ -181,6 +195,14 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--spatial-key", default=None)
     sp.add_argument("--already-log", action="store_true", help="bulk values are log2(count+1)")
     sp.add_argument("--force", action="store_true", help="overwrite an existing run's inputs")
+    sp.add_argument("--model", choices=["auto", "blank", "class"], default=None,
+                    help="DEGAS variant: blank (outcome only), class (adds cluster classification), auto = class when a cluster column exists")
+    sp.add_argument("--cv", choices=["patient_kfold", "leave_one_dataset_out"], default=None,
+                    help="cross-validation: patient_kfold (grouped by patient) or leave_one_dataset_out (needs --dataset-col)")
+    sp.add_argument("--feature-selection", choices=["variance", "mixed"], default=None,
+                    help="gene ranking inside training folds: variance, or mixed (variance + cluster markers)")
+    sp.add_argument("--rank-scope", choices=["global", "sample"], default=None,
+                    help="percentile ranking of cell scores across all cells or within each sample/donor")
 
     add("inspect", _cmd_inspect, "print the intake summary and warnings (refreshes input_manifest.json)")
 
@@ -199,37 +221,64 @@ def build_parser() -> argparse.ArgumentParser:
     add("select", _lazy_stage("select"), "cross-validation metrics and one-SE size selection")
 
     sp = add("fit", _lazy_stage("fit"), "fit final models")
-    sp.add_argument("--all", action="store_true")
+    g = sp.add_mutually_exclusive_group()
+    g.add_argument("--task", type=int, default=None,
+                   help="fit only the N-th (size, seed) pair, 0-based, sizes ascending x seeds ascending (SLURM array index)")
+    g.add_argument("--all", action="store_true", help="fit every (size, seed) pair (default)")
     sp.add_argument("--allow-cpu", action="store_true")
 
     add("score", _lazy_stage("score"), "score cells and patients with the rank-based ensemble")
 
+    def force(sp, what="redo the stage even if it is marked complete"):
+        sp.add_argument("--force", action="store_true", help=what)
+
     sp = add("stratify", _lazy_stage("stratify"), "within-cluster high/low split")
+    force(sp)
     sp.add_argument("--split", choices=["median", "quantiles"], default=None)
     sp.add_argument("--quantiles", type=float, nargs=2, default=None, metavar=("LOW", "HIGH"))
 
     sp = add("de", _lazy_stage("de"), "high-vs-low differential expression")
     sp.add_argument("--method", choices=["auto", "pseudobulk_deseq2", "wilcoxon"], default=None)
     sp.add_argument("--engine", choices=["pydeseq2", "edger"], default=None)
+    force(sp)
 
     sp = add("pathways", _lazy_stage("pathways"), "pathway enrichment")
-    sp.add_argument("--gmt", default=None)
-    sp.add_argument("--collection", default=None)
+    sp.add_argument("--gmt", default=None, help="local GMT gene-set file (default: download MSigDB via gseapy)")
+    sp.add_argument("--collection", default=None, help="MSigDB collection, e.g. h.all")
     sp.add_argument("--species", choices=["human", "mouse"], default=None)
+    force(sp)
 
-    add("explain", _lazy_stage("explain"), "gradient SHAP model attributions")
-    add("neighborhoods", _lazy_stage("neighborhoods"), "single-cell spatial neighborhood pooling")
-    add("maps", _lazy_stage("maps"), "score and cluster maps")
-    add("cside", _lazy_stage("cside"), "RCTD -> C-SIDE export/run/parse")
-    add("report", _lazy_stage("report"), "self-contained HTML report and METHODS.md")
+    sp = add("explain", _lazy_stage("explain"), "gradient SHAP model attributions")
+    force(sp)
+    sp = add("neighborhoods", _lazy_stage("neighborhoods"), "single-cell spatial neighborhood pooling")
+    force(sp)
+    sp = add("maps", _lazy_stage("maps"), "score and cluster maps")
+    force(sp)
+    sp = add("cside", _lazy_stage("cside"), "RCTD -> C-SIDE export/run/parse")
+    force(sp)
+    sp.add_argument("--reference", default=None, help="single-cell h5ad with cluster labels used as the RCTD reference")
+    sp.add_argument("--reference-label", default=None, help="obs column of --reference with the cell-type labels")
+    sp.add_argument("--max-cores", type=int, default=None, help="cores for RCTD / C-SIDE")
+    sp.add_argument("--fdr", type=float, default=None, help="FDR threshold for C-SIDE significance")
+    sp.add_argument("--cell-type-threshold", type=int, default=None, help="minimum cells of a type for C-SIDE testing")
+    sp = add("report", _lazy_stage("report"), "self-contained HTML report and METHODS.md")
+    force(sp, "accepted for consistency; the report is always rebuilt")
 
     sp = add("slurm", _lazy_stage("slurm"), "print sbatch scripts for the run")
     sp.add_argument("--account", required=True)
-    sp.add_argument("--partition", required=True)
-    sp.add_argument("--gpus", type=int, default=1)
+    sp.add_argument("--partition", required=True, help="GPU partition (train, fit, explain)")
+    sp.add_argument("--cpu-partition", default=None, help="CPU partition for the other stages (default general)")
+    sp.add_argument("--time", action="append", default=None, metavar="[STAGE=]HH:MM:SS",
+                    help="wall time; repeat as stage=HH:MM:SS, or give one value for all stages")
+    sp.add_argument("--venv", default=None, help="virtual environment to source in every job")
+    sp.add_argument("--modules", default=None, help="argument string for `module load`")
+    sp.add_argument("--explain", action="store_true", help="add the explain stage after pathways")
+    sp.add_argument("--gpus", type=int, default=1, help="GPUs per GPU job")
 
     sp = add("run-all", _cmd_run_all, "default chain for the minimal scenario")
     sp.add_argument("--allow-cpu", action="store_true")
+    sp.add_argument("--gmt", default=None, help="local GMT file passed to the pathways stage")
+    sp.add_argument("--skip-pathways", action="store_true", help="omit the pathways stage")
     return p
 
 
@@ -237,6 +286,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO,
                         format="%(levelname)s %(name)s: %(message)s", stream=sys.stderr)
+    for noisy in ("fontTools", "matplotlib", "numba", "h5py", "PIL"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
     try:
         return int(args.handler(args) or 0)
     except ValueError as exc:

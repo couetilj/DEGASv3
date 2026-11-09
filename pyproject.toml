@@ -23,6 +23,7 @@ dependencies = [
     "h5py>=3.8",
     "pydeseq2>=0.4.10",
     "gseapy>=1.0",
+    "lxml>=4.9",
     "umap-learn>=0.5",
 ]
 

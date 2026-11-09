@@ -9,7 +9,7 @@ wins. Run `degas3 init --help` for current flag names.
 | Item | Requirement |
 |---|---|
 | Format | CSV or TSV (optionally gzipped) |
-| Layout | one row per sample, one column per gene, first column = `sample_id`. A genes x samples file must be transposed first (on a copy). |
+| Layout | first column = gene or sample ids. Either orientation works: the loader compares the ids with the phenotype `sample_id` values and transposes when the samples are in the header. At least one id must match. |
 | Values | raw integer counts preferred. Non-negative. |
 | Log-transformed | allowed if it is log2(x+1). Set the bulk `already_log` flag. Do not mix. |
 | Gene ids | symbols or Ensembl ids, consistent with the cell data |
@@ -21,7 +21,7 @@ CSV or TSV, one row per bulk sample.
 
 | Column | Required | Notes |
 |---|---|---|
-| `sample_id` | yes | matches the bulk matrix rows exactly |
+| `sample_id` | yes | matches the bulk matrix sample ids exactly |
 | outcome (binary) | yes for binary | 0 = control/reference, 1 = case |
 | `time`, `event` | yes for survival | time > 0; event 1 = event, 0 = censored |
 | `patient_id` | optional | groups several samples from one person; folds are grouped by it |
@@ -52,7 +52,8 @@ Needed `obs` columns:
 | `st_spot` | Visium (Space Ranger `outs`, or h5ad) | spot x gene counts plus spot coordinates. |
 
 Xenium outs: point at the output directory holding `cell_feature_matrix.h5`
-and `cells.parquet` (or csv). One directory per donor section; provide a donor
+and `cells.csv.gz` (columns `cell_id`, `x_centroid`, `y_centroid`). `cells.parquet`
+is not read; only "Gene Expression" features are kept. One directory per donor section; provide a donor
 and section for each.
 
 ## Convert a Seurat object to h5ad

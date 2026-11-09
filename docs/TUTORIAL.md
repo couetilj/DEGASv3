@@ -20,15 +20,18 @@ training stops unless you pass `--allow-cpu`.
 degas3 simulate demo_data --seed 0
 ```
 
-The folder contains a bulk count matrix, a phenotype table (outcome, patient id,
-dataset), and cell data with donors and clusters, plus spatial examples. List
-the folder to see exact file names.
+The folder contains `bulk_counts.csv` (genes x samples), `bulk_pheno.csv`
+(sample_id, patient_id, dataset, outcome, time, event), `cells.h5ad` (donor,
+cell_type, and a donor-level label in `obs`), `spatial_cells.h5ad` (single-cell
+spatial example with two samples), `visium_spots.h5ad` (spot example), and
+`simulate_manifest.json` (the planted signal: which genes and which cluster).
 
 ## 3. Initialize and inspect
 
 ```bash
-degas3 init runs/demo --bulk demo_data/<bulk file> --pheno demo_data/<pheno file> \
-    --cells demo_data/<cells file> --outcome binary --donor-col donor
+degas3 init runs/demo --bulk demo_data/bulk_counts.csv --pheno demo_data/bulk_pheno.csv \
+    --cells demo_data/cells.h5ad --outcome binary --donor-col donor \
+    --cluster-col cell_type --label-col label
 degas3 inspect runs/demo
 ```
 
@@ -38,7 +41,7 @@ shared genes. `inputs/input_manifest.json` stores paths, sha256 hashes, shapes.
 ## 4. Run the chain
 
 ```bash
-degas3 run-all runs/demo --allow-cpu
+degas3 run-all runs/demo --gmt tests/fixtures/toy.gmt --allow-cpu
 ```
 
 Or run the stages one by one (`prepare`, `train --all`, `select`, `fit --all`,

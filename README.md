@@ -43,16 +43,22 @@ for small tests only. It is slow and never chosen silently. On a cluster, see
 
 ```bash
 degas3 simulate demo_data --seed 0
-degas3 init runs/demo --bulk demo_data/bulk_counts.csv --pheno demo_data/pheno.csv \
-    --cells demo_data/cells.h5ad --outcome binary --donor-col donor
+degas3 init runs/demo --bulk demo_data/bulk_counts.csv --pheno demo_data/bulk_pheno.csv \
+    --cells demo_data/cells.h5ad --outcome binary --donor-col donor \
+    --cluster-col cell_type --label-col label
 degas3 inspect runs/demo
-degas3 run-all runs/demo --allow-cpu     # small test only; use a GPU for real data
+degas3 run-all runs/demo --gmt tests/fixtures/toy.gmt --allow-cpu   # small test only; use a GPU for real data
 degas3 report runs/demo
 # open runs/demo/report/index.html
 ```
 
-File names written by `simulate` are listed in `docs/TUTORIAL.md`. Check them
-there if your version differs.
+The simulated genes are synthetic, so they do not overlap MSigDB Hallmark;
+`--gmt tests/fixtures/toy.gmt` supplies a matching toy gene-set file (without it,
+pathways records `no_eligible_gene_sets` and the chain continues; `--skip-pathways` omits the stage).
+
+`simulate` writes `bulk_counts.csv`, `bulk_pheno.csv`, `cells.h5ad`,
+`spatial_cells.h5ad`, `visium_spots.h5ad`, and `simulate_manifest.json` (the
+planted signal, for checking results).
 
 ## Stages
 
@@ -122,9 +128,14 @@ doi:10.1101/2025.02.03.636036.
 
 ## Credits
 
-DEGASv3 builds on DEGASv2 by Ziyu Liu, Travis S. Johnson, Sihong Li, and Jiahui
-Liu (https://github.com/ElliotLiu1997/DEGASv2). The original DEGAS was created
-by Travis S. Johnson and colleagues (https://github.com/tsteelejohnson91/DEGAS).
+The model code in `degas3/core` is a cleaned port of the DEGASv2 Python package
+(https://github.com/ElliotLiu1997/DEGASv2), developed by Ziyu Liu, Travis S.
+Johnson, Sihong Li, and Jiahui Liu. The DEGASv2 method preprint is by Liu, Li,
+Couetil, Zhang, Huang, and Johnson. The original DEGAS was created by Travis S.
+Johnson and colleagues (https://github.com/tsteelejohnson91/DEGAS). The workflow
+conventions in DEGASv3 (fold-internal feature ranking, one-standard-error size
+ensembles, rank-based scores, within-cluster stratification, donor-aware DE) come
+from applied DEGAS studies by the DEGAS team.
 
 ## License
 

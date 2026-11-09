@@ -44,7 +44,7 @@ Layout is in `docs/SPEC.md`.
 - Always note that performance after selection is optimistic.
 
 ## fit
-- Command: `degas3 fit RUN --all`
+- Command: `degas3 fit RUN --all` (or `--task N`: the N-th (size, seed) pair, 0-based, sizes ascending x seeds ascending; `models/fit_tasks.json` lists them).
 - Outputs: `models/size_####/seed_#/`.
 - Success: retained sizes x 5 seeds present.
 
@@ -67,7 +67,7 @@ Layout is in `docs/SPEC.md`.
 - Failures: not enough donors with both groups (auto falls back to cell-level Wilcoxon; say so); edgeR requested but R or edgeR missing (use PyDESeq2 or install R).
 
 ## pathways
-- Command: `degas3 pathways RUN [--gmt PATH | --collection h.all --species human]`
+- Command: `degas3 pathways RUN [--gmt PATH | --collection h.all --species human] [--force]`
 - Outputs: `high_vs_low_gsea.csv`, `ora_high.csv`, `ora_low.csv` per cluster.
 - Failures: gene set download blocked (give a GMT file); species mismatch (set `--species`); few tested genes (small panel; report it).
 
