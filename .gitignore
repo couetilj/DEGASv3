@@ -18,7 +18,5 @@ dist/
 runs/
 Rplots.pdf
 
-# _reference/ is intentionally NOT ignored yet; it is removed before release.
-
-# reference material is read locally by agents and removed before release
+# local reference material used while porting; not part of the package
 _reference/

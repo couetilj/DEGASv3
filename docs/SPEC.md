@@ -1,4 +1,7 @@
-# DEGASv3 specification (binding for implementation agents)
+# DEGASv3 specification
+
+This is the binding design document for the package. Contributors and coding agents
+extending DEGASv3 must keep behavior consistent with it or update it in the same change.
 
 DEGASv3 is a disease-agnostic, agent-driven workflow that transfers patient-level
 outcome information (bulk RNA-seq with a binary or time-to-event outcome) onto
@@ -292,7 +295,7 @@ degas3 run-all RUN                   # the default chain for the minimal scenari
 - No hard-coded paths. No disease-specific names outside `simulate` and examples.
 - Docstrings state what each statistic is and is not (e.g. percentile ≠ probability).
 
-## Foundation interfaces (implemented in Wave 1; build on these, do not re-implement)
+## Implemented shared interfaces (build on these; do not re-implement)
 
 - `degas3.config.RunConfig.load(run)` → config with all defaults; `update_config_file(run, **kv)`.
 - `degas3.runs.RunDir(run)`: `.bulk_npz`, `.cells_h5ad`, `.input_manifest`, `.stage_dir(stage)`,
