@@ -115,7 +115,7 @@ def load_cells(
     else:
         spatial_key = None
     if label_col is not None:
-        per_donor = adata.obs.groupby(donor_col)[label_col].nunique() if donor_col else None
+        per_donor = adata.obs.groupby(donor_col, observed=True)[label_col].nunique() if donor_col else None
         if per_donor is not None and (per_donor > 1).any():
             raise ValueError(f"label column {label_col!r} varies within a donor; it must be one clinical label per donor.")
     return CellData(adata, donor_col, cluster_col, label_col, modality, spatial_key, sample_col)
